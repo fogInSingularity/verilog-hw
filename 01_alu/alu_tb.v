@@ -5,7 +5,7 @@
 module alu_tb;
 
 localparam WIDTH = 32;
-localparam SEL_WIDTH = ALU_OPS_WIDHT;
+localparam SEL_WIDTH = `ALU_OPS_WIDTH;
 
 reg [WIDTH-1 : 0] val1;
 reg [WIDTH-1 : 0] val2;
@@ -31,7 +31,7 @@ end
 task check(
     input [WIDTH-1 : 0] v1,
     input [WIDTH-1 : 0] v2,
-    input alu_ops       op,
+    input [`ALU_OPS_WIDTH-1 : 0] op,
     input [WIDTH-1 : 0] expected
 );
     val1 = v1;
@@ -47,14 +47,14 @@ endtask
 
 initial begin
     #1
-    check(1, 2, ADD, 3);
-    check(2, 1, SUB, 1);
-    check(1, 0, AND, 0);
-    check(1, 1, SLL, 2);
-    check(1, 2, SLT, 1);
-    check($unsigned(-1), 2, SLT, 1);
-    check(1, 2, SLTU, 1);
-    check(32'b1 << (WIDTH - 1), WIDTH - 1, SRL, 1);
+    check(1, 2, `ADD, 3);
+    check(2, 1, `SUB, 1);
+    check(1, 0, `AND, 0);
+    check(1, 1, `SLL, 2);
+    check(1, 2, `SLT, 1);
+    check($unsigned(-1), 2, `SLT, 1);
+    check(1, 2, `SLTU, 1);
+    check(32'b1 << (WIDTH - 1), WIDTH - 1, `SRL, 1);
 end
 
 endmodule

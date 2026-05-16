@@ -1,7 +1,8 @@
 module regfile_2r1w #(
     parameter MEM_DEPTH = 32,
     parameter MEM_WIDTH = 32,
-    parameter ADDR_WIDTH = $clog2(MEM_DEPTH)
+    parameter ADDR_WIDTH = $clog2(MEM_DEPTH),
+    parameter IS_COMB_RD = 1'b0
 )(
     input wire clk,
 
@@ -23,9 +24,22 @@ always @(posedge clk) begin
         mem[i_waddr] <= i_wdata;
 end
 
-always @(posedge clk) begin
-    o_rdata_a <= mem[i_raddr_a];
-    o_rdata_b <= mem[i_raddr_b];
+generate
+if (IS_COMB_RD) begin : gen__comb_rd
+
+    always @(*) begin
+        o_rdata_a = mem[i_raddr_a];
+        o_rdata_b = mem[i_raddr_b];
+    end
+
+end else begin : gen__ff_rd
+
+    always @(posedge clk) begin
+        o_rdata_a <= mem[i_raddr_a];
+        o_rdata_b <= mem[i_raddr_b];
+    end
+
 end
+endgenerate
 
 endmodule

@@ -5,7 +5,7 @@
 module cmp_tb;
 
 localparam WIDTH = 32;
-localparam SEL_WIDTH = CMP_OPS_WIDTH;
+localparam SEL_WIDTH = `CMP_OPS_WIDTH;
 
 reg [WIDTH-1 : 0] val1;
 reg [WIDTH-1 : 0] val2;
@@ -31,7 +31,7 @@ end
 task check(
     input [WIDTH-1 : 0] v1,
     input [WIDTH-1 : 0] v2,
-    input cmp_ops       op,
+    input [`CMP_OPS_WIDTH-1 : 0] op,
 
     input expected
 );
@@ -48,11 +48,11 @@ endtask
 
 initial begin
     #1
-    check(1, 1, BEQ, 1);
-    check(2, 1, BEQ, 0);
-    check(1, 0, BNE, 1);
-    check(1, 2, BLT, 1);
-    check(1, 0, BLT, 0);
+    check(1, 1, `BEQ, 1);
+    check(2, 1, `BEQ, 0);
+    check(1, 0, `BNE, 1);
+    check(1, 2, `BLT, 1);
+    check(1, 0, `BLT, 0);
 end
 
 endmodule

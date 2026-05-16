@@ -18,11 +18,12 @@ if (BEHAVIORAL == 1) begin : gen__behavioral
     assign o_ext = { {EXT_WIDTH{sign_bit}}, i_val};
 
 end else begin : gen__struct
-    for (genvar i = 0; i < N; i = i + 1) begin : gen__direct
+    genvar i;
+    for (i = 0; i < N; i = i + 1) begin : gen__direct
         assign o_ext[i] = i_val[i];
     end
 
-    for (genvar i = N; i < M; i = i + 1) begin : gen__signbit
+    for (i = N; i < M; i = i + 1) begin : gen__signbit
         signbit signbit_inst (
             .i_sign_bit(i_val[N-1]),
             .o_val(o_ext[i])
