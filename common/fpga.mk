@@ -1,11 +1,14 @@
 sim: $(TB_LIST) $(RTL_LIST)
-	iverilog -I./src/ $^ -o sim
+	iverilog -DICARUS_SIM -I./src/ $(INC_LIST) $^ -o sim
 	./sim
 
 waves: dump.vcd
-	gtkwave dump.vcd &
+	gtkwave dump.vcd > /dev/null 2>&1
 
-syn:
+lint: $(TB_LIST) $(RTL_LIST)
+	verilator --lint-only -Wall -I./src/ $(INC_LIST) $^
+
+syn: $(SYN_DEPS)
 	quartus_sh --flow compile system_top
 
 gui:
@@ -19,4 +22,6 @@ clean:
 	rm -rf db incremental_db output_files system_top.qws greybox_tmp *.bak
 	$(MAKE) -C samples/ clean
 
-.PHONY: syn flash clean gui sim waves
+
+
+.PHONY: syn flash clean gui sim waves lint
