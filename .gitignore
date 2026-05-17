@@ -6,3 +6,7 @@ db
 sim
 dump.vcd
 greybox_tmp
+*.txt
+*.out
+*.out.map
+*.o
