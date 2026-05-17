@@ -21,7 +21,7 @@ module lsu (
     input wire [`DATA_MEMW-1 : 0]       i_mem_rd_data
 );
 
-assign o_mem_wr_en = (i_inst_type == `INST_STORE);
+assign o_mem_wr_en = (i_inst_type == `INST_LSU_STORE);
 assign o_mem_wr_mask = i_lsu_mask;
 
 assign o_mem_addr = i_addr;

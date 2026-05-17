@@ -23,7 +23,7 @@ display display(
 
 cpu #(
     .DISPLAYW(DISPLAY_DATAW)
-) (
+) cpu_inst (
     .clk(clk),
     .rst_n(rst_n),
 

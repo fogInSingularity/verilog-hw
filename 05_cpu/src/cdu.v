@@ -149,7 +149,7 @@ always @(*) begin
     is_jump = 1'b0;
     rf_rd_we = 1'b0;
     wb_sel = {`WB_SELW{1'bx}};
-    lsu_inst_type = `INST_LOAD;
+    lsu_inst_type = `INST_LSU_IGNORE;
     lsu_mask = 4'b0000;
 
     case (opcode)
@@ -209,7 +209,7 @@ always @(*) begin
             alu_arg_sel2 = `SEL2_IIMM;
             rf_rd_we = 1'b1;
             wb_sel = `WB_SEL_LOAD;
-            lsu_inst_type = `INST_LOAD;
+            lsu_inst_type = `INST_LSU_LOAD;
 
             case (funct3)
                 3'b000,
@@ -228,14 +228,14 @@ always @(*) begin
             alu_op = `ADD;
             alu_arg_sel1 = `SEL1_RF_SRC1;
             alu_arg_sel2 = `SEL2_SIMM;
-            lsu_inst_type = `INST_STORE;
+            lsu_inst_type = `INST_LSU_STORE;
 
             case (funct3)
                 3'b000: lsu_mask = 4'b0001;
                 3'b001: lsu_mask = 4'b0011;
                 3'b010: lsu_mask = 4'b1111;
                 default: begin
-                    lsu_inst_type = `INST_LOAD;
+                    lsu_inst_type = `INST_LSU_LOAD;
                 end
             endcase
         end

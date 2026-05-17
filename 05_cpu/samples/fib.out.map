@@ -1,0 +1,34 @@
+
+Merging object attributes
+
+
+There are no discarded input sections
+
+Настройки памяти
+
+Имя           Происхождение Длина         Атрибуты
+*default*        0x00000000         0xffffffff
+
+Сценарий компоновщика и карта памяти
+
+                0x00010000                        . = 0x10000
+
+.text           0x00010000       0x30
+ *(.text)
+ .text          0x00010000       0x30 fib.s.o
+                0x00010000                _start
+                0x0001002c                _finish
+ *(.text.*)
+LOAD fib.s.o
+OUTPUT(fib.out elf32-littleriscv)
+
+.data           0x00010030        0x0
+ .data          0x00010030        0x0 fib.s.o
+
+.bss            0x00010030        0x0
+ .bss           0x00010030        0x0 fib.s.o
+
+.riscv.attributes
+                0x00000000       0x1a
+ .riscv.attributes
+                0x00000000       0x1a fib.s.o

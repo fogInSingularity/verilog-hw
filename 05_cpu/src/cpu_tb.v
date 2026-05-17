@@ -37,7 +37,7 @@ initial begin
 end
 
 initial begin
-    #5000
+    #1000
     $display("[%t] Timeout", $realtime);
     $finish();
 end

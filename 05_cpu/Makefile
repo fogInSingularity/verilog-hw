@@ -21,6 +21,7 @@ RTL_LIST := \
 	src/mmio_xbar.v
 
 SYN_DEPS := samples
+SIM_DEPS := samples
 
 include ../common/fpga.mk
 
