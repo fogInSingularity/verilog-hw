@@ -22,7 +22,7 @@ module lsu (
 );
 
 assign o_mem_wr_en = (i_inst_type == `INST_LSU_STORE);
-assign o_mem_wr_mask = i_lsu_mask;
+assign o_mem_wr_mask = o_mem_wr_en ? i_lsu_mask : `LSU_MASKW'b0;
 
 assign o_mem_addr = i_addr;
 assign o_mem_wr_data = i_store_data;

@@ -18,8 +18,6 @@
 
 `ifdef ICARUS_SIM
 `define INST_MEM_INIT_FILE "samples/meow.txt"
-`elsif QUARTUS_SIM
-`define INST_MEM_INIT_FILE "samples/meow.mif"
 `elsif QUARTUS_SYN
 `define INST_MEM_INIT_FILE "samples/meow.mif"
 `endif
@@ -32,8 +30,7 @@
 `define DATA_MEM_ADDRW $clog2(256)
 
 `define PCW `REGW
-// `define PC_INIT_VAL `PCW'h10000
-`define PC_INIT_VAL `PCW'h0
-`define PC_INC_VAL 1
+`define PC_INIT_VAL `PCW'h10000
+`define PC_INC_VAL 4
 
 `endif // RV32I_VH_

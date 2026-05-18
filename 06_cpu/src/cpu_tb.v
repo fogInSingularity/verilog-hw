@@ -1,4 +1,4 @@
-`timescale 1ns/100ps
+`timescale 1ns/10ps
 
 `include "rv32i.vh"
 
@@ -44,7 +44,7 @@ initial begin
 end
 
 initial begin
-    #1000
+    #2000
     $display("[%t] Timeout", $realtime);
     $finish();
 end

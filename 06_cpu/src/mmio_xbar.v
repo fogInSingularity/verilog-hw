@@ -26,7 +26,7 @@ always @(posedge clk or negedge rst_n) begin
         o_display_data <= 0;
     end else begin
         if (i_wr_en && (i_addr == `DISPLAY_ADDR)) begin
-            o_display_data <= i_wr_data;
+            o_display_data <= i_wr_data[DISPLAYW-1 : 0];
         end
     end
 end

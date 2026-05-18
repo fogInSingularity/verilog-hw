@@ -126,8 +126,8 @@ assign o_rf_rs2 = i_inst[24 : 20];
 assign o_u_imm = {i_inst[31 : 12], 12'b0};
 assign o_i_imm = i_imm_byte;
 assign o_s_imm = s_imm_byte;
-assign o_b_imm = $signed(b_imm_byte) >>> 2;
-assign o_j_imm = $signed(j_imm_byte) >>> 2;
+assign o_b_imm = $signed(b_imm_byte);
+assign o_j_imm = $signed(j_imm_byte);
 
 assign o_alu_op = alu_op;
 assign o_alu_arg_sel1 = alu_arg_sel1;
@@ -235,7 +235,7 @@ always @(*) begin
                 3'b001: lsu_mask = 4'b0011;
                 3'b010: lsu_mask = 4'b1111;
                 default: begin
-                    lsu_inst_type = 1'bx;
+                    lsu_inst_type = `LSU_SELW'bx;
                 end
             endcase
         end

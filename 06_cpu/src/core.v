@@ -46,7 +46,7 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
-assign o_imem_addr = pc_next;
+assign o_imem_addr = pc_next >> 2;
 
 wire [`ALU_OPS_WIDTH-1 : 0] alu_op;
 wire [`ALU_SELW-1 : 0] alu_sel1;
