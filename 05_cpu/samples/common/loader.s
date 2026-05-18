@@ -4,6 +4,7 @@
 .globl main
 
 _start:
+    nop
     li      sp, 0x1040
     call    main
 

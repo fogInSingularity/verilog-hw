@@ -1,6 +1,8 @@
 HW_DIR := $(abspath $(CURDIR)/..)
 
 TB_LIST := src/cpu_tb.v
+TOP := cpu_tb
+
 INC_LIST := \
 	-I$(HW_DIR)/01_alu \
 	-I$(HW_DIR)/01_cmp 

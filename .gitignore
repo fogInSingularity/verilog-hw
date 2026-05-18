@@ -10,3 +10,9 @@ greybox_tmp
 *.out
 *.out.map
 *.o
+*.bin
+*.ver
+*work
+simulation
+transcript
+modelsim.ini

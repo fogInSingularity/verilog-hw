@@ -13,31 +13,36 @@ S_SRCS=$(wildcard *.s)
 C_SRCS=$(wildcard *.c)
 S_TXTS=$(S_SRCS:%.s=%.txt)
 C_TXTS=$(C_SRCS:%.c=%.txt)
+S_MIFS=$(S_SRCS:%.s=%.mif)
+C_MIFS=$(C_SRCS:%.c=%.mif)
 
-all: $(S_TXTS) $(C_TXTS)
+all: $(S_TXTS) $(C_TXTS) $(S_MIFS) $(C_MIFS)
+
+%.mif: %.txt
+	python3 txt2mif.py $^ $@
 
 %.txt: %.bin
-	hexdump -v -e '"%08x\n"' $^ > $@
-	python3 nop_pad.py $@
+	@hexdump -v -e '"%08x\n"' $^ > $@
+	@python3 nop_pad.py $@
 
 %.bin: %.out
-	$(OBJCOPY) -j .text -O binary $^ $@
+	@$(OBJCOPY) -j .text -O binary $^ $@
 
 %.out: %.s
-	$(AS) -march=rv32i -mabi=ilp32 -c $^ -o $^.o
-	$(LD) -melf32lriscv -Map=$@.map -T common/riscv.ld $^.o -o $@
-	$(OBJDUMP) -d --visualize-jumps -M no-aliases $@
+	@$(AS) -march=rv32i -mabi=ilp32 -c $^ -o $^.o
+	@$(LD) -melf32lriscv -Map=$@.map -T common/riscv.ld $^.o -o $@
+	@$(OBJDUMP) -d --visualize-jumps -M no-aliases $@ > $@.dump
 
 loader.o: common/loader.s
-	$(AS) -march=rv32i -mabi=ilp32 -c common/loader.s -o loader.o
+	@$(AS) -march=rv32i -mabi=ilp32 -c common/loader.s -o loader.o
 
 %.out: %.c loader.o
-	$(CC) -nostdlib -march=rv32i -mabi=ilp32 -fPIC -s -O2 -c $< -o $<.o
-	$(LD) -melf32lriscv -Map=$@.map -T common/riscv.ld loader.o $<.o -o $@
-	$(OBJDUMP) -d --visualize-jumps -M no-aliases $@
+	@$(CC) -nostdlib -march=rv32i -mabi=ilp32 -fPIC -s -O2 -c $< -o $<.o
+	@$(LD) -melf32lriscv -Map=$@.map -T common/riscv.ld loader.o $<.o -o $@
+	@$(OBJDUMP) -d --visualize-jumps -M no-aliases $@ > $@.dump
 
 %.out.log: %.out .FORCE
-	$(FUNCSIM) -e 0x`$(READELF) -s $< | grep _finish | awk '{ print $$2 }'` -l $< | tee $@
+	@$(FUNCSIM) -e 0x`$(READELF) -s $< | grep _finish | awk '{ print $$2 }'` -l $< | tee $@
 
 .FORCE:
 
@@ -46,4 +51,4 @@ loader.o: common/loader.s
 .PRECIOUS: %.o %.out %.bin %.txt
 
 clean:
-	rm -f *.o *.out *.bin *.txt *.mif *.map *.log
+	@rm -f *.o *.out *.bin *.txt *.mif *.map *.log *.dump *.ver

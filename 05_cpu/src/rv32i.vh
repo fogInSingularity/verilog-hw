@@ -31,6 +31,6 @@
 
 `define PCW `REGW
 `define PC_INIT_VAL `PCW'h10000
-`define PC_INC_VAL 1
+`define PC_INC_VAL 4
 
 `endif // RV32I_VH_

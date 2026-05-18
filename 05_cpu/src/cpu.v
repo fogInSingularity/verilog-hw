@@ -53,7 +53,7 @@ wire [`DATA_MEMW-1 : 0]      dmem_rd_data;
 
 wire                         mmio_wr_en;
 wire [`LSU_MASKW-1 : 0]      mmio_wr_mask;
-wire [`DATA_MEM_ADDRW-1 : 0] mmio_addr;
+wire [`REGW-1 : 0]           mmio_addr;
 wire [`DATA_MEMW-1 : 0]      mmio_wr_data;
 wire [`DATA_MEMW-1 : 0]      mmio_rd_data;
 

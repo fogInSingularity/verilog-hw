@@ -23,6 +23,10 @@ reg [`PCW-1 : 0] pc;
 wire [`PCW-1 : 0] pc_inc;
 assign pc_inc = pc + `PC_INC_VAL;
 
+wire [`PCW-1 : 0] pc_branch;
+
+wire taken;
+
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         pc <= `PC_INIT_VAL;
@@ -31,7 +35,7 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
-assign o_imem_addr = pc;
+assign o_imem_addr = pc >> 2;
 
 wire [`ALU_OPS_WIDTH-1 : 0] alu_op;
 wire [`ALU_SELW-1 : 0] alu_sel1;
@@ -181,10 +185,8 @@ cmp #(
     .i_sel(jbt_op)
 );
 
-wire taken;
 assign taken = (is_jbt_taken && is_branch) || is_jump;
 
-wire [`PCW-1 : 0] pc_branch;
 assign pc_branch = alu_dest;
 
 // }}} jump/branch taken

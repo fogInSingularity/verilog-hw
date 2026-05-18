@@ -1,3 +1,5 @@
+`include "rv32i.vh"
+
 module mem_xbar #(
     parameter ADDRW = `REGW,
     parameter DATAW = `DATA_MEMW,
@@ -39,7 +41,7 @@ assign o_mmio_wr_en = i_wr_en && (xbar_sel == MMIO_SEL);
 assign o_dmem_wr_mask = i_wr_mask;
 assign o_mmio_wr_mask = i_wr_mask;
 
-assign o_dmem_addr = i_addr;
+assign o_dmem_addr = i_addr >> $clog2(DATAW / 8);
 assign o_mmio_addr = i_addr;
 
 assign o_dmem_wr_data = i_wr_data;
