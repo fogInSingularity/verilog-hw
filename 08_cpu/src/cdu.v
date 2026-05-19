@@ -11,6 +11,8 @@ module cdu #(
     output wire [`ALU_SELW-1 : 0] o_alu_arg_sel2,
 
     output wire [`CMP_OPS_WIDTH-1 : 0] o_cmp_op,
+    output wire [`BRANCH_SELW-1 : 0] o_branch_sel1,
+    output wire [`BRANCH_SELW-1 : 0] o_branch_sel2,
     output wire o_is_branch,
     output wire o_is_jump,
     
@@ -111,11 +113,17 @@ signext #(
 reg [`ALU_OPS_WIDTH-1 : 0] alu_op;
 reg [`ALU_SELW-1 : 0] alu_arg_sel1;
 reg [`ALU_SELW-1 : 0] alu_arg_sel2;
+
 reg [`CMP_OPS_WIDTH-1 : 0] cmp_op;
+reg [`BRANCH_SELW-1 : 0] branch_sel1;
+reg [`BRANCH_SELW-1 : 0] branch_sel2;
 reg is_branch;
 reg is_jump;
+
 reg rf_rd_we;
+
 reg [`WB_SELW-1 : 0] wb_sel;
+
 reg [`LSU_SELW-1 : 0] lsu_inst_type;
 reg [`LSU_MASKW-1 : 0] lsu_mask;
 
@@ -132,11 +140,16 @@ assign o_j_imm = $signed(j_imm_byte);
 assign o_alu_op = alu_op;
 assign o_alu_arg_sel1 = alu_arg_sel1;
 assign o_alu_arg_sel2 = alu_arg_sel2;
-assign o_cmp_op = cmp_op;
+
+assign o_cmp_op = cmp_op; 
+assign o_branch_sel1 = branch_sel1;
+assign o_branch_sel2 = branch_sel2;
 assign o_is_branch = is_branch;
 assign o_is_jump = is_jump;
+
 assign o_rf_rd_we = rf_rd_we;
 assign o_wb_sel = wb_sel;
+
 assign o_lsu_inst_type = lsu_inst_type;
 assign o_lsu_mask = lsu_mask;
 
@@ -167,27 +180,24 @@ always @(*) begin
         end
 
         `OPCODE_JAL: begin
-            alu_op = `ADD;
-            alu_arg_sel1 = `SEL1_JIMM;
-            alu_arg_sel2 = `SEL2_PC;
+            branch_sel1 = `BSEL1_JIMM;
+            branch_sel2 = `BSEL2_PC;
             is_jump = 1'b1;
             rf_rd_we = 1'b1;
             wb_sel = `WB_SEL_PC_INC;
         end
 
         `OPCODE_JALR: begin
-            alu_op = `ADD;
-            alu_arg_sel1 = `SEL1_RF_SRC1;
-            alu_arg_sel2 = `SEL2_IIMM;
+            branch_sel1 = `BSEL1_RF_SRC1;
+            branch_sel2 = `BSEL2_IIMM;
             is_jump = 1'b1;
             rf_rd_we = 1'b1;
             wb_sel = `WB_SEL_PC_INC;
         end
 
         `OPCODE_BRANCH: begin
-            alu_op = `ADD;
-            alu_arg_sel1 = `SEL1_BIMM;
-            alu_arg_sel2 = `SEL2_PC;
+            branch_sel1 = `BSEL1_BIMM;
+            branch_sel2 = `BSEL2_PC;
             is_branch = 1'b1;
 
             case (funct3)
@@ -204,9 +214,6 @@ always @(*) begin
         end
 
         `OPCODE_LOAD: begin
-            alu_op = `ADD;
-            alu_arg_sel1 = `SEL1_RF_SRC1;
-            alu_arg_sel2 = `SEL2_IIMM;
             rf_rd_we = 1'b1;
             wb_sel = `WB_SEL_LOAD;
             lsu_inst_type = `INST_LSU_LOAD;
@@ -225,9 +232,6 @@ always @(*) begin
         end
 
         `OPCODE_STORE: begin
-            alu_op = `ADD;
-            alu_arg_sel1 = `SEL1_RF_SRC1;
-            alu_arg_sel2 = `SEL2_SIMM;
             lsu_inst_type = `INST_LSU_STORE;
 
             case (funct3)

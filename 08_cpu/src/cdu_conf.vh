@@ -6,16 +6,26 @@
 `define ALU_SELW 2
 
 `define SEL1_UIMM    2'h0
-`define SEL1_BIMM    2'h1
-`define SEL1_JIMM    2'h2
-`define SEL1_RF_SRC1 2'h3
+`define SEL1_RF_SRC1 2'h1
 
 `define SEL2_RF_SRC2 2'h0
 `define SEL2_IIMM    2'h1
-`define SEL2_SIMM    2'h2
-`define SEL2_PC      2'h3
+`define SEL2_PC      2'h2
 
 // }}} alu sel 
+
+// branch sel {{{
+
+`define BRANCH_SELW 2
+
+`define BSEL1_JIMM    2'h0
+`define BSEL1_RF_SRC1 2'h1
+`define BSEL1_BIMM    2'h2
+
+`define BSEL2_PC      2'h0
+`define BSEL2_IIMM    2'h1
+
+// }}} branch sel
 
 // wb sel {{{
 

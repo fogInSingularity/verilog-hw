@@ -47,6 +47,8 @@ wire [`ALU_SELW-1 : 0] alu_sel1;
 wire [`ALU_SELW-1 : 0] alu_sel2;
 
 wire [`CMP_OPS_WIDTH-1 : 0] jbt_op;
+wire [`BRANCH_SELW-1 : 0] branch_sel1;
+wire [`BRANCH_SELW-1 : 0] branch_sel2;
 wire is_branch;
 wire is_jump;
 
@@ -82,6 +84,8 @@ cdu cdu_inst (
     .o_alu_arg_sel2(alu_sel2),
 
     .o_cmp_op(jbt_op),
+    .o_branch_sel1(branch_sel1),
+    .o_branch_sel2(branch_sel2),
     .o_is_branch(is_branch),
     .o_is_jump(is_jump),
 
@@ -127,8 +131,6 @@ wire [`REGW-1 : 0] alu_dest;
 always @(*) begin
     case (alu_sel1) 
         `SEL1_UIMM:    alu_src1 = inst_u_imm;
-        `SEL1_BIMM:    alu_src1 = inst_b_imm;
-        `SEL1_JIMM:    alu_src1 = inst_j_imm;
         `SEL1_RF_SRC1: alu_src1 = rf_src1;
     endcase
 end
@@ -137,7 +139,6 @@ always @(*) begin
     case (alu_sel2) 
         `SEL2_RF_SRC2: alu_src2 = rf_src2;
         `SEL2_IIMM:    alu_src2 = inst_i_imm;
-        `SEL2_SIMM:    alu_src2 = inst_s_imm;
         `SEL2_PC:      alu_src2 = pc;
     endcase
 end
@@ -151,10 +152,20 @@ alu alu_inst (
 );
 
 wire [`REGW-1 : 0] load_data;
+reg [`REGW-1 : 0] lsu_offset;
+
+always @(*) begin
+    case (lsu_inst_type)
+        `INST_LSU_LOAD:  lsu_offset = inst_i_imm;
+        `INST_LSU_STORE: lsu_offset = inst_s_imm;
+        default:         lsu_offset = `REGW'bx;
+    endcase
+end
 
 lsu lsu_inst (
     // core
-    .i_addr(alu_dest),
+    .i_addr(rf_src1),
+    .i_offset(lsu_offset),
     .i_store_data(rf_src2),
     .o_load_data(load_data),
 
@@ -187,7 +198,27 @@ cmp #(
 
 assign taken = (is_jbt_taken && is_branch) || is_jump;
 
-assign pc_branch = alu_dest;
+reg [`REGW-1 : 0] branch_arg1;
+reg [`REGW-1 : 0] branch_arg2;
+
+always @(*) begin
+    case (branch_sel1)
+        `BSEL1_JIMM:    branch_arg1 = inst_j_imm;
+        `BSEL1_RF_SRC1: branch_arg1 = rf_src1;
+        `BSEL1_BIMM:    branch_arg1 = inst_b_imm;
+        default:        branch_arg1 = `REGW'bx;
+    endcase
+end
+
+always @(*) begin
+    case (branch_sel2)
+        `BSEL2_PC:      branch_arg2 = pc;
+        `BSEL2_IIMM:    branch_arg2 = inst_i_imm;
+        default:        branch_arg2 = `REGW'bx;
+    endcase
+end
+
+assign pc_branch = branch_arg1 + branch_arg2;
 
 // }}} jump/branch taken
 
