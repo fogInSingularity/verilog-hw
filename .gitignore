@@ -16,3 +16,6 @@ greybox_tmp
 simulation
 transcript
 modelsim.ini
+*.dump
+*.mif
+*.qws
