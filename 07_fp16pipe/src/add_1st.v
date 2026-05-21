@@ -1,9 +1,12 @@
-module fp16_add #(
+module add_1st #(
     parameter EXP_WIDTH = 5,
     parameter MANT_WIDTH = 10,
     parameter WIDTH = 1 + EXP_WIDTH + MANT_WIDTH,
     parameter BIAS = (6'b1 << (EXP_WIDTH - 1)) - 1
 ) (
+    input wire clk,
+    input wire rst_n,
+
     input wire [WIDTH-1 : 0] i_a,
     input wire [WIDTH-1 : 0] i_b,
     output wire [WIDTH-1 : 0] o_res

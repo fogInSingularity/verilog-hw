@@ -1,9 +1,12 @@
-module fp16_add #(
+module add_3st #(
     parameter EXP_WIDTH = 5,
     parameter MANT_WIDTH = 10,
     parameter WIDTH = 1 + EXP_WIDTH + MANT_WIDTH,
     parameter BIAS = (6'b1 << (EXP_WIDTH - 1)) - 1
 ) (
+    input wire clk,
+    input wire rst_n,
+
     input wire [WIDTH-1 : 0] i_a,
     input wire [WIDTH-1 : 0] i_b,
     output wire [WIDTH-1 : 0] o_res
@@ -13,6 +16,8 @@ localparam [EXP_WIDTH-1 : 0] EXP_ZERO = {EXP_WIDTH{1'b0}};
 localparam [EXP_WIDTH : 0] EXT_EXP_ZERO = {EXP_WIDTH+1{1'b0}};
 localparam [MANT_WIDTH-1 : 0] MANT_ZERO = {MANT_WIDTH{1'b0}};
 localparam [MANT_WIDTH : 0] EXT_MANT_ZERO = {MANT_WIDTH+1{1'b0}};
+
+// stage 1 {{{
 
 // unpack {{{
 
@@ -25,9 +30,9 @@ assign exp1 = i_a[WIDTH-2 : MANT_WIDTH];
 assign mant1 = i_a[MANT_WIDTH-1 : 0];
 
 wire is_subnormal1;
-assign is_subnormal1 = (exp1 == {1'b0, EXP_ZERO}) && (mant1 != MANT_ZERO);
+assign is_subnormal1 = (exp1 == EXT_EXP_ZERO) && (mant1 != MANT_ZERO);
 wire is_zero1;
-assign is_zero1 = (exp1 == {1'b0, EXP_ZERO}) && (mant1 == MANT_ZERO);
+assign is_zero1 = (exp1 == EXT_EXP_ZERO) && (mant1 == MANT_ZERO);
 
 wire [MANT_WIDTH-1+1 : 0] full_mant1;
 assign full_mant1 = (is_subnormal1 || is_zero1) ? EXT_MANT_ZERO : {1'b1, mant1};
@@ -41,9 +46,9 @@ assign exp2 = i_b[WIDTH-2 : MANT_WIDTH];
 assign mant2 = i_b[MANT_WIDTH-1 : 0];
 
 wire is_subnormal2;
-assign is_subnormal2 = (exp2 == {1'b0, EXP_ZERO}) && (mant2 != MANT_ZERO);
+assign is_subnormal2 = (exp2 == EXT_EXP_ZERO) && (mant2 != MANT_ZERO);
 wire is_zero2;
-assign is_zero2 = (exp2 == {1'b0, EXP_ZERO}) && (mant2 == MANT_ZERO);
+assign is_zero2 = (exp2 == EXT_EXP_ZERO) && (mant2 == MANT_ZERO);
 
 wire [MANT_WIDTH-1+1 : 0] full_mant2;
 assign full_mant2 = (is_subnormal2 || is_zero2) ? EXT_MANT_ZERO : {1'b1, mant2};
@@ -87,27 +92,69 @@ assign exp_diff = big_exp - small_exp;
 
 // }}} exp diff
 
+// }}} stage 1
+
+// stage 2 {{{
+
+reg big_sign_s2;
+reg small_sign_s2;
+reg [EXP_WIDTH : 0] big_exp_s2;
+reg [EXP_WIDTH : 0] small_exp_s2;
+reg [EXTRA_WIDTH-1 : 0] big_mant_s2;
+reg [EXTRA_WIDTH-1 : 0] small_mant_s2;
+
+reg [EXP_WIDTH : 0] exp_diff_s2;
+
+always @(posedge clk) begin
+    big_sign_s2 <= big_sign;
+    small_sign_s2 <= small_sign;
+    big_exp_s2 <= big_exp;
+    small_exp_s2 <= small_exp;
+    big_mant_s2 <= big_mant;
+    small_mant_s2 <= small_mant;
+
+    exp_diff_s2 <= exp_diff;
+end
+
 // shift {{{
 
 wire [EXTRA_WIDTH-1 : 0] small_mant_shifted;
-assign small_mant_shifted = small_mant >> exp_diff;
+assign small_mant_shifted = small_mant_s2 >> exp_diff_s2;
 
 // }}} shift
 
 // sign magnitude adder {{{
 
 wire same_sign;
-assign same_sign = (big_sign == small_sign);
+assign same_sign = (big_sign_s2 == small_sign_s2);
 
 wire [EXTRA_WIDTH : 0] addsub_res;
 assign addsub_res = same_sign 
-    ? ({1'b0, big_mant} + {1'b0, small_mant_shifted}) 
-    : ({1'b0, big_mant} - {1'b0, small_mant_shifted});
+    ? ({1'b0, big_mant_s2} + {1'b0, small_mant_shifted}) 
+    : ({1'b0, big_mant_s2} - {1'b0, small_mant_shifted});
 
 wire addsub_zero;
 assign addsub_zero = (addsub_res == {EXTRA_WIDTH+1{1'b0}});
 
 // }}} sign magnitude adder 
+
+// }}} stage 2
+
+// stage 3 {{{
+
+reg [EXTRA_WIDTH : 0] addsub_res_s3;
+reg addsub_zero_s3;
+reg same_sign_s3;
+reg [EXP_WIDTH : 0] big_exp_s3;
+reg big_sign_s3;
+
+always @(posedge clk) begin
+    addsub_res_s3 <= addsub_res;
+    addsub_zero_s3 <= addsub_zero;
+    same_sign_s3 <= same_sign;
+    big_exp_s3 <= big_exp_s2;
+    big_sign_s3 <= big_sign_s2;
+end
 
 // normalize {{{
 
@@ -122,38 +169,38 @@ reg found_one;
 integer idx;
 
 always @(*) begin
-    norm_mant = addsub_res[EXTRA_WIDTH-1 : 0];
-    norm_exp  = big_exp;
+    norm_mant = addsub_res_s3[EXTRA_WIDTH-1 : 0];
+    norm_exp  = big_exp_s3;
 
     lz         = {EXP_WIDTH+1{1'b0}};
     max_shift  = {EXP_WIDTH+1{1'b0}};
     shift_amt  = {EXP_WIDTH+1{1'b0}};
     found_one  = 1'b0;
 
-    if (addsub_zero) begin
+    if (addsub_zero_s3) begin
         norm_mant = {EXTRA_WIDTH{1'b0}};
         norm_exp  = EXT_EXP_ZERO;
-    end else if (same_sign && addsub_res[EXTRA_WIDTH]) begin
-        norm_mant = addsub_res[EXTRA_WIDTH : 1];
-        norm_exp  = big_exp + 1'b1;
+    end else if (same_sign_s3 && addsub_res_s3[EXTRA_WIDTH]) begin
+        norm_mant = addsub_res_s3[EXTRA_WIDTH : 1];
+        norm_exp  = big_exp_s3 + 1'b1;
     end else begin
         lz = EXTRA_WIDTH;
 
         for (idx = EXTRA_WIDTH - 1; idx >= 0; idx = idx - 1) begin
-            if (!found_one && addsub_res[idx]) begin
+            if (!found_one && addsub_res_s3[idx]) begin
                 lz = (EXTRA_WIDTH - 1 - idx);
                 found_one = 1'b1;
             end
         end
 
-        if (big_exp > 1) max_shift = big_exp - 1'b1;
+        if (big_exp_s3 > 1) max_shift = big_exp_s3 - 1'b1;
         else max_shift = {EXP_WIDTH+1{1'b0}};
 
         if (lz < max_shift) shift_amt = lz;
         else shift_amt = max_shift;
 
-        norm_mant = addsub_res[EXTRA_WIDTH-1 : 0] << shift_amt;
-        norm_exp  = big_exp - shift_amt;
+        norm_mant = addsub_res_s3[EXTRA_WIDTH-1 : 0] << shift_amt;
+        norm_exp  = big_exp_s3 - shift_amt;
     end
 end
 
@@ -179,8 +226,10 @@ assign out_mant = underflow_or_subnormal
     : rounded_mant[MANT_WIDTH-1 : 0];
 
 wire out_sign;
-assign out_sign = (addsub_zero || underflow_or_subnormal) ? 1'b0 : big_sign;
+assign out_sign = (addsub_zero_s3 || underflow_or_subnormal) ? 1'b0 : big_sign_s3;
 
 assign o_res = {out_sign, out_exp, out_mant};
+
+// }}} stage 3
 
 endmodule
