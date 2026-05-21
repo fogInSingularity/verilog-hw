@@ -3,8 +3,8 @@ typedef unsigned long uint32_t;
 
 #define FIB_ADDR ((volatile uint16_t *)0x20u)
 
-// #define FREQ 5'000'000
-#define FREQ 2
+#define FREQ 20'000'000
+// #define FREQ 2
 
 #define SLEEP_N FREQ
 
