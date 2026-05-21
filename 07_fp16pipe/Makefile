@@ -1,33 +1,29 @@
 HW_DIR := $(abspath $(CURDIR)/..)
 
-TB_LIST := src/cpu_tb.v
-TOP = cpu_tb
+TEST_SIZE ?= 4096
+TEST_OP   ?= add
+DEBUG     ?= 0
+LAT ?= 3
 
-INC_LIST := \
-	-I$(HW_DIR)/01_alu \
-	-I$(HW_DIR)/01_cmp 
+TB_LIST := src/fp_tb.v
+TOP = fp_tb
+
+INC_LIST :=
+
+FLAGS := -DADD_STAGE=add_$(LAT)st -DLATENCY=$(LAT) -DTEST_SIZE=$(TEST_SIZE) -DTEST_OP=$(TEST_OP) -DDEBUG=$(DEBUG) 
 
 RTL_LIST := \
-	$(HW_DIR)/00_signext/signext.v \
-	$(HW_DIR)/01_alu/alu.v \
-	$(HW_DIR)/01_cmp/cmp.v \
-	$(HW_DIR)/02_rf_2r1w/regfile_2r1w.v \
-	src/cpu.v \
-	src/core.v \
-	src/cdu.v \
-	src/dmem.v \
-	src/imem.v \
-	src/lsu.v \
-	src/regfile.v \
-	src/mem_xbar.v \
-	src/mmio_xbar.v
+	src/fp_add.v \
+	src/add_1st.v \
+	src/add_2st.v \
+	src/add_3st.v \
 
-SYN_DEPS := samples
-SIM_DEPS := samples
+SYN_DEPS := gen_test
+SIM_DEPS := gen_test
 
 include ../common/fpga.mk
 
-.PHONY: samples
-
-samples:
-	$(MAKE) -C samples
+.PHONY: gen_test
+ 
+gen_test:
+	python3 test.py $(TEST_SIZE) $(TEST_OP) > test.txt

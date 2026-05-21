@@ -1,7 +1,7 @@
 # icurus
 
-sim: $(SIM_DEPS) $(TB_LIST) $(RTL_LIST)
-	@iverilog -DICARUS_SIM -I./src/ $(INC_LIST) $^ -o sim
+sim: $(TB_LIST) $(RTL_LIST) | $(SIM_DEPS)
+	@iverilog -DICARUS_SIM -I./src/ $(INC_LIST) $(FLAGS) $^ -o sim
 	@./sim
 
 waves: dump.vcd
