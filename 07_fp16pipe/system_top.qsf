@@ -70,7 +70,7 @@ set_global_assignment -name VERILOG_FILE src/add_1st.v
 set_global_assignment -name VERILOG_FILE src/add_2st.v
 set_global_assignment -name VERILOG_FILE src/add_3st.v
 
-set_global_assignment -name VERILOG_MACRO "ADD_STAGE=add_3st"
+set_global_assignment -name VERILOG_MACRO "ADD_STAGE=add_2st"
 
 set_global_assignment -name SDC_FILE system_top.sdc
 

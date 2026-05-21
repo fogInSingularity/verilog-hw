@@ -4,4 +4,4 @@ derive_clock_uncertainty
 
 set_false_path -from [get_ports RSTN] -to [all_clocks]
 set_false_path -from [get_ports {i_a[*] i_b[*]}] -to [all_clocks]
-set_false_path -from [all_clocks] -to [get_ports {o_res[*]}]
+set_false_path -from * -to [get_ports {o_res[*]}]
